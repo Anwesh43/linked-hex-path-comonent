@@ -6,6 +6,7 @@ class LinkedHexagonPathComponent extends HTMLElement {
         const shadow = this.attachShadow({mode:'open'})
         this.animator = new Animator()
         this.linkedPath = new LinkedHexagonPath()
+        shadow.appendChild(this.img)
     }
     render() {
         const canvas = document.createElement('canvas')
@@ -42,14 +43,14 @@ class Node {
     draw(context) {
         const scales = this.state.scales
         context.beginPath()
-        context.arc(this.x, this.y, 0, 2 * Math.PI)
+        context.arc(this.x, this.y, size/19, 0, 2 * Math.PI)
         context.fill()
         if(this.neighbor) {
             const x1 = this.x, y1 = this.y, x2 = this.neighbor.x, y2 = this.neighbor.y
             const updatePoints = (i) => {
                 return {x:x1+(x2-x1)*scales[i], y:y1+(y2-y1)*scales[i]}
             }
-            context.beinPath()
+            context.beginPath()
             const point1 = updatePoints(0)
             const point2 = updatePoints(1)
             context.moveTo(point2.x, point2.y)
@@ -60,7 +61,7 @@ class Node {
     addNeighbor(neighbor) {
         this.neighbor = neighbor
     }
-    update(stobcb) {
+    update(stopcb) {
         this.state.update(stopcb)
     }
     startUpdating(startcb) {
@@ -78,18 +79,21 @@ class State {
     }
     update(stopcb) {
         this.scales[this.j] += this.dir * 0.1
+        console.log(this.scales)
         if(Math.abs(this.scales[this.j]) > 1) {
             this.scales[this.j] = 1
             this.j++
             if(this.j == this.scales.length) {
-                this.init()
+                this.dir = 0
                 stopcb()
+                console.log("stopped")
             }
         }
     }
     startUpdating(startcb) {
         if(this.dir == 0) {
-            this.dir = 1 - 2*this.scale
+            this.init()
+            this.dir = 1
             startcb()
         }
     }
@@ -103,22 +107,26 @@ class LinkedHexagonPath {
     initLinkedPath() {
         var node = this.curr
         for(var i=1; i<=5; i++) {
-            const currNode = new Node(1)
+            const currNode = new Node(i)
             node.addNeighbor(currNode)
             node = currNode
         }
         node.addNeighbor(this.curr)
     }
     draw(context) {
-        const node = this.root
+        context.save()
+        context.translate(size/2, size/2)
+        var node = this.root
         context.strokeStyle = '#2980b9'
-        contet.lineWidth = size/30
+        context.fillStyle = '#2980b9'
+        context.lineWidth = size/30
         context.lineCap = 'round'
         node.draw(context)
         while(node.i != 5) {
             node = node.neighbor
             node.draw(context)
         }
+        context.restore()
     }
     update(stopcb) {
         this.curr.update(() => {
@@ -126,10 +134,15 @@ class LinkedHexagonPath {
             if(this.curr.i == 0) {
                 stopcb()
             }
+            else {
+                this.curr.startUpdating(() => {
+                    
+                })
+            }
         })
     }
     startUpdating(startcb) {
-        this.curr.startUpdating()
+        this.curr.startUpdating(startcb)
     }
 }
 class Animator {
