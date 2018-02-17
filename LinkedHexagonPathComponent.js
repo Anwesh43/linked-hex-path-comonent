@@ -27,15 +27,20 @@ class Node {
         this.state = new State()
     }
     draw(context) {
-        const scale = this.state.scale
+        const scales = this.state.scales
         context.beginPath()
         context.arc(this.x, this.y, 0, 2 * Math.PI)
         context.fill()
         if(this.neighbor) {
+            const x1 = this.x, y1 = this.y, x2 = this.neighbor.x, y2 = this.neighbor.y
+            const updatePoints = (i) => {
+                return {x:x1+(x2-x1)*scales[i], y:y1+(y2-y1)*scales[i]}
+            }
             context.beinPath()
-            context.moveTo(this.x, this.y)
-            const x = this.neighbor.x, y = this.neighbor.y
-            context.lineTo(this.x + (x - this.x) * scale, this.y + (y - this.y) * scale)
+            const point1 = updatePoints(0)
+            const point2 = updatePoints(1)
+            context.moveTo(point2.x, point2.y)
+            context.lineTo(point1.x, point1.y)
             context.stroke()
         }
     }
@@ -51,17 +56,20 @@ class Node {
 }
 class State {
     constructor() {
-        this.scale = 0
-        this.prevScale = 0
+        this.init()
+    }
+    init() {
+        this.scales = [0, 0]
         this.dir = 0
+        this.j = 0
     }
     update(stopcb) {
-        this.scale += this.dir * 0.1
-        if(Math.abs(this.scale - this.prevScale) > 1) {
-            this.scale = this.prevScale + this.dir
-            this.dir *= -1
-            this.prevScale = this.scale
-            if(this.scale == 0) {
+        this.scales[this.j] += this.dir * 0.1
+        if(Math.abs(this.scales[this.j]) > 1) {
+            this.scales[this.j] = 1
+            this.j++
+            if(this.j == this.scales.length) {
+                this.init()
                 stopcb()
             }
         }
@@ -90,6 +98,9 @@ class LinkedHexagonPath {
     }
     draw(context) {
         const node = this.root
+        context.strokeStyle = '#2980b9'
+        contet.lineWidth = size/30
+        context.lineCap = 'round'
         node.draw(context)
         while(node.i != 5) {
             node = node.neighbor
