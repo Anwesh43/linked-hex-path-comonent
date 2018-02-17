@@ -4,6 +4,8 @@ class LinkedHexagonPathComponent extends HTMLElement {
         super()
         this.img = document.createElement('img')
         const shadow = this.attachShadow({mode:'open'})
+        this.animator = new Animator()
+        this.linkedPath = new LinkedHexagonPath()
     }
     render() {
         const canvas = document.createElement('canvas')
@@ -12,10 +14,20 @@ class LinkedHexagonPathComponent extends HTMLElement {
         const context = canvas.getContext('2d')
         context.fillStyle = '#212121'
         context.fillRect(0, 0, size, size)
+        this.linkedPath.draw(context)
         this.img.src = canvas.toDataURL()
     }
     connectedCallback() {
         this.render()
+        this.img.onmousedown  = (event) => {
+            this.linkedPath.startUpdating(() => {
+                this.animator.start(() => {
+                    this.linkedPath.update(() => {
+                        this.animator.stop()
+                    })
+                })
+            })
+        }
     }
 }
 class Node {
