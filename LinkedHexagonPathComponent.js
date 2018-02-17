@@ -22,6 +22,7 @@ class LinkedHexagonPathComponent extends HTMLElement {
         this.img.onmousedown  = (event) => {
             this.linkedPath.startUpdating(() => {
                 this.animator.start(() => {
+                    this.render()
                     this.linkedPath.update(() => {
                         this.animator.stop()
                     })
@@ -150,3 +151,4 @@ class Animator {
         }
     }
 }
+customElements.define('linked-hex-path', LinkedHexagonPathComponent)
