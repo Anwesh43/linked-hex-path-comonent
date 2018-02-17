@@ -24,8 +24,10 @@ class Node {
         const deg = i * Math.PI/3
         this.x = (size/3)*Math.cos(deg)
         this.y = (size/3)*Math.sin(deg)
+        this.state = new State()
     }
     draw(context) {
+        const scale = this.state.scale
         context.beginPath()
         context.arc(this.x, this.y, 0, 2 * Math.PI)
         context.fill()
@@ -33,7 +35,7 @@ class Node {
             context.beinPath()
             context.moveTo(this.x, this.y)
             const x = this.neighbor.x, y = this.neighbor.y
-            context.lineTo(this.x + (x - this.x), this.y + (y - this.y))
+            context.lineTo(this.x + (x - this.x) * scale, this.y + (y - this.y) * scale)
             context.stroke()
         }
     }
@@ -41,10 +43,10 @@ class Node {
         this.neighbor = neighbor
     }
     update(stobcb) {
-
+        this.state.update(stopcb)
     }
     startUpdating(startcb) {
-
+        this.state.startUpdating(startcb)
     }
 }
 class State {
