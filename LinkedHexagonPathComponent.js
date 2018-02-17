@@ -59,9 +59,11 @@ class State {
         this.scale += this.dir * 0.1
         if(Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
-            this.dir = 0
+            this.dir *= -1
             this.prevScale = this.scale
-            stopcb(this.scale)
+            if(this.scale == 0) {
+                stopcb()
+            }
         }
     }
     startUpdating(startcb) {
@@ -69,5 +71,40 @@ class State {
             this.dir = 1 - 2*this.scale
             startcb()
         }
+    }
+}
+class LinkedHexagonPath {
+    constructor() {
+        this.root = new Node(0)
+        this.curr = this.root
+        this.initLinkedPath()
+    }
+    initLinkedPath() {
+        var node = this.curr
+        for(var i=1; i<=5; i++) {
+            const currNode = new Node(1)
+            node.addNeighbor(currNode)
+            node = currNode
+        }
+        node.addNeighbor(this.curr)
+    }
+    draw(context) {
+        const node = this.root
+        node.draw(context)
+        while(node.i != 5) {
+            node = node.neighbor
+            node.draw(context)
+        }
+    }
+    update(stopcb) {
+        this.curr.update(() => {
+            this.curr = this.curr.neighbor
+            if(this.curr.i == 0) {
+                stopcb()
+            }
+        })
+    }
+    startUpdating(startcb) {
+        this.curr.startUpdating()
     }
 }
